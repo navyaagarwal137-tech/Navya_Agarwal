@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#241a3d;--glass:rgba(255,255,255,.55);--line:rgba(36,26,61,.12);--btn:#241a3d;--btnt:#fff;--dlg:#fff}
+body.dark{--ink:#f1e9ff;--glass:rgba(45,32,80,.6);--line:rgba(255,255,255,.14);--btn:#ff8fc4;--btnt:#241a3d;--dlg:#231a3d;
+  background:radial-gradient(circle at 15% 20%,#4a1d5e,transparent 45%),radial-gradient(circle at 85% 80%,#1d2a6b,transparent 45%),#140e24}
+*{box-sizing:border-box;margin:0}
+body{height:100vh;display:flex;font-family:'Bricolage Grotesque',sans-serif;color:var(--ink);
+  background:radial-gradient(circle at 15% 20%,#ffc2e2,transparent 45%),radial-gradient(circle at 85% 80%,#b9c4ff,transparent 45%),#f6eefc}
+button,select{font:inherit;cursor:pointer;border:0;color:var(--ink)}
+aside{width:260px;padding:18px;display:flex;flex-direction:column;gap:8px;background:var(--glass);backdrop-filter:blur(18px);border-right:1px solid var(--line)}
+.logo{font-weight:800;font-size:22px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.orb{width:28px;height:28px;border-radius:50%;flex:none;background:conic-gradient(#ff5fa2,#7b6cff,#38d6c4,#ff5fa2)}
+.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(1turn)}}
+#new{padding:10px;border-radius:12px;background:var(--btn);color:var(--btnt)}
+#hist{flex:1;overflow:auto}
+#hist small{display:block;opacity:.55;font-size:12px;margin:14px 0 4px 6px}
+.item{display:flex;gap:8px;padding:8px 10px;border-radius:10px;font-size:14px;cursor:pointer}
+.item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item i{opacity:0;font-style:normal}
+.item:hover i{opacity:.6}
+.item:hover,.item.on{background:var(--glass)}
+.link{background:none;text-align:left;padding:8px 10px;border-radius:10px}
+.link:hover{background:var(--glass)}
+.me{display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--line)}
+.me div{flex:1;font-size:14px;line-height:1.3}.me span{opacity:.55;font-size:12px}
+.av{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--btn);color:var(--btnt);font-weight:600}
+main{flex:1;display:flex;flex-direction:column;max-width:900px;margin:auto;height:100%;padding:12px 20px 8px}
+header select{background:none;font-weight:600;font-size:16px;padding:6px}
+#chat{flex:1;overflow:auto;display:flex;flex-direction:column;gap:20px;padding:10px}
+.hero{margin:auto;text-align:center}
+.hero .orb{width:70px;height:70px;margin:0 auto 16px;animation:spin 8s linear infinite}
+.hero h1{font-size:38px;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:20px}
+.chips button{padding:8px 14px;border-radius:20px;background:var(--glass);border:1px solid var(--line)}
+.chips button:hover{border-color:#ff5fa2}
+.msg{display:flex;gap:12px;max-width:88%;line-height:1.6}
+.msg>span{width:34px;height:34px}
+.txt p{white-space:pre-wrap;margin-top:2px}
+.user{align-self:flex-end;flex-direction:row-reverse;text-align:right}
+.code{text-align:left;margin:8px 0;border-radius:12px;overflow:hidden;background:#1d1530;color:#ffd9ec}
+.code div{display:flex;justify-content:space-between;padding:6px 12px;background:#2d2250;font-size:13px}
+.code button{background:none;color:#fff}
+.code pre{padding:12px;overflow:auto}
+#bar{display:flex;gap:8px;align-items:center;padding:8px;border-radius:22px;background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(18px)}
+#bar button{background:none;font-size:18px;width:38px;height:38px;border-radius:50%}
+#bar .on{background:#ff5fa2}
+#q{flex:1;border:0;outline:0;background:none;font:inherit;color:var(--ink);padding:10px}
+#bar .send{background:var(--btn);color:var(--btnt)}
+.note{text-align:center;font-size:12px;opacity:.55;margin-top:8px}
+dialog{margin:auto;border:0;border-radius:20px;padding:24px;background:var(--dlg);color:var(--ink);min-width:300px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+dialog>*{display:block;margin:10px 0}
+dialog input[type=text]{margin-left:8px;padding:6px;border-radius:8px;border:1px solid var(--line)}
+@media(max-width:700px){aside{display:none}}
+</style>
+</head>
+<body>
+<aside>
+  <div class="logo"><span class="orb"></span>My AI</div>
+  <button id="new">+ New Chat</button>
+  <div id="hist"></div>
+  <button class="link" id="setBtn">⚙ Settings</button>
+  <button class="link" id="helpBtn">? Help</button>
+  <div class="me"><span class="av" id="avatar"></span><div><b id="who"></b><br><span>Free Plan</span></div><button class="link" id="dots">⋯</button></div>
+</aside>
+<main>
+  <header><select id="model">
+    <option value="gemini-2.5-flash">My AI Fast</option>
+    <option value="gemini-2.5-pro">My AI Smart</option>
+    <option value="gemini-2.5-flash-lite">My AI Lite</option>
+  </select></header>
+  <div id="chat"></div>
+  <form id="bar">
+    <button type="button" id="plus" title="Attach image">+</button>
+    <input id="q" type="text" placeholder="Message My AI..." autocomplete="off" autofocus>
+    <button type="button" id="mic" title="Speak">🎤</button>
+    <button class="send">↑</button>
+  </form>
+  <p class="note">My AI can make mistakes. Check important information.</p>
+  <input type="file" id="file" accept="image/*" hidden>
+</main>
+
+<dialog id="set">
+  <h3>Settings</h3>
+  <label>Your name <input type="text" id="nm"></label>
+  <label><input type="checkbox" id="dk"> Dark mode</label>
+  <button id="clr" class="link">Delete all chats</button>
+  <form method="dialog"><button class="link">Close</button></form>
+</dialog>
+<dialog id="help">
+  <h3>Help</h3>
+  <p>• Pick a model at the top.<br>• + attaches an image.<br>• 🎤 types what you say.<br>• Hover a chat and press × to delete it.<br>• Answers use live Google Search.</p>
+  <form method="dialog"><button class="link">Close</button></form>
+</dialog>
+
+<script>
+const $ = s => document.querySelector(s), chat = $('#chat');
+const KEY = 'PASTE_YOUR_GEMINI_API_KEY';
+const store = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+const load = (k, d) => JSON.parse(localStorage.getItem(k)) ?? d;
+const HERO = `<div class="hero"><div class="orb"></div><h1>How can I help you?</h1>
+<p>Ask me anything. I can help you learn, write, code and explore ideas.</p>
+<div class="chips"><button>Explain HTML in simple words</button><button>Latest tech news today</button>
+<button>Write a Java palindrome program</button><button>Weather in Delhi today</button></div></div>`;
+let chats = load('chats', []), cur = null, img = null;
+
+const save = () => { store('chats', chats); renderHist(); };
+const profile = () => { const n = load('name', 'Student'); $('#who').textContent = n; $('#avatar').textContent = n[0].toUpperCase(); };
+
+function renderHist() {                 // sidebar grouped as Today / Yesterday / Earlier
+  const day = d => { const n = Math.round((new Date().setHours(0,0,0,0) - new Date(d).setHours(0,0,0,0)) / 864e5); return n < 1 ? 'Today' : n < 2 ? 'Yesterday' : 'Earlier'; };
+  let last = '';
+  $('#hist').replaceChildren(...chats.flatMap(c => {
+    const out = [], g = day(c.date);
+    if (g != last) { const h = document.createElement('small'); h.textContent = last = g; out.push(h); }
+    const d = document.createElement('div');
+    d.className = 'item' + (c == cur ? ' on' : '');
+    d.innerHTML = '<span></span><i title="Delete">×</i>';
+    d.firstChild.textContent = c.title;
+    d.firstChild.onclick = () => openChat(c);
+    d.lastChild.onclick = () => { chats = chats.filter(x => x != c); if (cur == c) newChat(); save(); };
+    return [...out, d];
+  }));
+}
+
+function show(el, text) {               // plain text + code blocks with Copy button
+  el.replaceChildren(...text.split('```').map((t, i) => {
+    if (!(i % 2)) { const p = document.createElement('p'); p.textContent = t.trim(); return p; }
+    const m = t.match(/^(\w*)\n([\s\S]*)/), box = document.createElement('div');
+    box.className = 'code';
+    box.innerHTML = '<div><span></span><button>Copy</button></div><pre></pre>';
+    box.querySelector('span').textContent = m ? m[1] || 'code' : 'code';
+    box.querySelector('pre').textContent = (m ? m[2] : t).trim();
+    box.querySelector('button').onclick = e => {
+      navigator.clipboard.writeText(box.querySelector('pre').textContent);
+      e.target.textContent = 'Copied!'; setTimeout(() => e.target.textContent = 'Copy', 1500);
+    };
+    return box;
+  }).filter(n => n.textContent));
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function add(role, text) {
+  const m = document.createElement('div');
+  m.className = 'msg ' + role;
+  m.innerHTML = '<span></span><div><b></b><div class="txt"></div></div>';
+  if (role == 'bot') m.firstChild.className = 'orb'; else { m.firstChild.className = 'av'; m.firstChild.textContent = load('name', 'Student')[0].toUpperCase(); }
+  m.querySelector('b').textContent = role == 'bot' ? 'My AI' : 'You';
+  chat.append(m); show(m.querySelector('.txt'), text);
+  return m;
+}
+
+function newChat() { cur = null; chat.innerHTML = HERO; renderHist(); }
+function openChat(c) { cur = c; chat.replaceChildren(); c.msgs.forEach(m => add(m.role, m.text)); renderHist(); }
+
+async function send(q) {
+  $('.hero')?.remove();
+  const c = cur || (cur = { title: q.slice(0, 28), date: Date.now(), msgs: [] });
+  if (!chats.includes(c)) chats.unshift(c);
+  add('user', q); c.msgs.push({ role: 'user', text: q }); save();
+  const m = add('bot', 'Thinking...'), orb = m.firstChild;
+  orb.classList.add('spin');
+  const contents = c.msgs.map(x => ({ role: x.role == 'bot' ? 'model' : 'user', parts: [{ text: x.text }] }));
+  if (img) { contents.at(-1).parts.push({ inline_data: img }); img = null; $('#plus').classList.remove('on'); }
+  let a;
+  try {
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${$('#model').value}:generateContent?key=${KEY}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents, tools: [{ google_search: {} }] })
+    });
+    const d = await r.json();
+    a = d.candidates?.[0]?.content?.parts?.map(p => p.text).join('') || d.error?.message || 'No reply.';
+    c.msgs.push({ role: 'bot', text: a }); save();
+  } catch { a = 'Network error. Check your internet connection.'; }
+  show(m.querySelector('.txt'), a); orb.classList.remove('spin');
+}
+
+$('#bar').onsubmit = e => { e.preventDefault(); const q = $('#q').value.trim(); if (q) { $('#q').value = ''; send(q); } };
+chat.onclick = e => { if (e.target.closest('.chips button')) send(e.target.textContent); };
+$('#new').onclick = newChat;
+
+$('#plus').onclick = () => $('#file').click();   // attach image -> base64
+$('#file').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { img = { mime_type: f.type, data: r.result.split(',')[1] }; $('#plus').classList.add('on'); };
+  r.readAsDataURL(f);
+};
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;   // voice input
+$('#mic').onclick = () => {
+  if (!SR) return alert('Voice input needs Chrome or Edge.');
+  const r = new SR(); r.lang = 'en-IN';
+  r.onresult = e => $('#q').value = e.results[0][0].transcript;
+  r.onend = () => $('#mic').classList.remove('on');
+  $('#mic').classList.add('on'); r.start();
+};
+
+const openSet = () => { $('#nm').value = load('name', 'Student'); $('#dk').checked = load('dark', false); $('#set').showModal(); };
+$('#setBtn').onclick = $('#dots').onclick = openSet;
+$('#helpBtn').onclick = () => $('#help').showModal();
+$('#nm').oninput = e => { store('name', e.target.value.trim() || 'Student'); profile(); };
+$('#dk').onchange = e => { document.body.classList.toggle('dark', e.target.checked); store('dark', e.target.checked); };
+$('#clr').onclick = () => { chats = []; save(); newChat(); };
+
+document.body.classList.toggle('dark', load('dark', false));
+profile(); newChat();
+</script>
+</body>
+</html>
